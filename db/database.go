@@ -28,13 +28,13 @@ func init() {
 	fmt.Println("Create table if not exists success...")
 }
 
-func GetAll() []string {
+func GetAll() []user.User {
 	results, err := DB.Query("SELECT nom, message FROM bgs")
 	if err != nil {
 		panic(err.Error())
 	}
 
-	var users []string
+	var users []user.User
 
 	for results.Next() {
 		var user user.User
@@ -43,8 +43,7 @@ func GetAll() []string {
 		if err != nil {
 			panic(err.Error())
 		}
-
-		users = append(users, user.Name, user.Message)
+		users = append(users, user)
 	}
 
 	return users

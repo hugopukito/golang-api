@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"module.com/webServer/cors"
@@ -13,7 +14,8 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	cors.EnableCors(&w, r)
 	w.Header().Set("Content-Type", "application/json")
 	users := db.GetAll()
-	json.NewEncoder(w).Encode(users)
+	dto, _ := json.Marshal(users)
+	fmt.Fprintf(w, string(dto))
 }
 
 func PostUserMessage(w http.ResponseWriter, r *http.Request) {
