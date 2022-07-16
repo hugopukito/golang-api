@@ -14,6 +14,7 @@ func EnableCors(w *http.ResponseWriter, r *http.Request) {
 		"http://77.136.126.254":      true,
 		"http://192.168.0.27":        true,
 		"http://localhost":           true,
+		"http://hugopukito.com":      true,
 	}
 
 	if origin := r.Header.Get("Origin"); allowList[origin] {
