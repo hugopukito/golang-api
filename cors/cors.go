@@ -7,14 +7,8 @@ import (
 func EnableCors(w *http.ResponseWriter, r *http.Request) {
 
 	allowList := map[string]bool{
-		"http://77.136.126.254:8081": true,
-		"http://192.168.0.27:8081":   true,
-		"http://localhost:8081":      true,
-		"http://localhost:8080":      true,
-		"http://77.136.126.254":      true,
-		"http://192.168.0.27":        true,
-		"http://localhost":           true,
-		"http://hugopukito.com":      true,
+		"http://www.hugopukito.com": true,
+		"http://hugopukito.com":     true,
 	}
 
 	if origin := r.Header.Get("Origin"); allowList[origin] {
