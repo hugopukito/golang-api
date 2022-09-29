@@ -20,12 +20,12 @@ func init() {
 
 	fmt.Println("Connection db success...")
 
-	_, err = DB.Exec("CREATE TABLE IF NOT EXISTS bgs (id INT PRIMARY KEY NOT NULL AUTO_INCREMENT, nom VARCHAR(30), message VARCHAR(255))")
+	_, err = DB.Exec("CREATE TABLE IF NOT EXISTS messages (id INT PRIMARY KEY NOT NULL AUTO_INCREMENT, name VARCHAR(30), message VARCHAR(255))")
 	if err != nil {
 		panic(err.Error())
 	}
 
-	fmt.Println("Create table 'bgs' if not exists success...")
+	fmt.Println("Create table 'messages' if not exists success...")
 
 	_, err = DB.Exec("CREATE TABLE IF NOT EXISTS users (id INT PRIMARY KEY NOT NULL AUTO_INCREMENT, name VARCHAR(255), email VARCHAR(255), password VARCHAR(255), role VARCHAR(255))")
 	if err != nil {
@@ -36,7 +36,7 @@ func init() {
 }
 
 func GetAllMessages() []entity.Message {
-	results, err := DB.Query("SELECT nom, message FROM bgs")
+	results, err := DB.Query("SELECT name, message FROM messages")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -57,17 +57,35 @@ func GetAllMessages() []entity.Message {
 }
 
 func InsertMessage(message entity.Message) {
-	insert := "INSERT INTO bgs (nom, message) values (?, ?)"
+	insert := "INSERT INTO messages (name, message) values (?, ?)"
 	_, err := DB.Exec(insert, message.Name, message.Message)
 	if err != nil {
 		panic(err.Error())
 	}
 }
 
-func FindUser(user entity.User) {
+func FindUser(email string) entity.User {
+	result, err := DB.Query("select name, email, password, role from users where email = ? order by email asc limit 1;", email)
+	if err != nil {
+		panic(err.Error())
+	}
 
+	var user entity.User
+
+	for result.Next() {
+		err = result.Scan(&user.Name, &user.Email, &user.Password, &user.Role)
+		if err != nil {
+			panic(err.Error())
+		}
+	}
+
+	return user
 }
 
 func InsertUser(user entity.User) {
-
+	insert := "INSERT INTO users (name, email, password, role) values (?, ?, ?, ?)"
+	_, err := DB.Exec(insert, user.Name, user.Email, user.Password, user.Role)
+	if err != nil {
+		panic(err.Error())
+	}
 }

@@ -1,7 +1,7 @@
 package entity
 
 type Message struct {
-	Name    string `json:"nom"`
+	Name    string `json:"name"`
 	Message string `json:"message"`
 }
 
