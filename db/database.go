@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"module.com/webServer/user"
+	"module.com/webServer/entity"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -25,34 +25,49 @@ func init() {
 		panic(err.Error())
 	}
 
-	fmt.Println("Create table if not exists success...")
+	fmt.Println("Create table 'bgs' if not exists success...")
+
+	_, err = DB.Exec("CREATE TABLE IF NOT EXISTS users (id INT PRIMARY KEY NOT NULL AUTO_INCREMENT, name VARCHAR(255), email VARCHAR(255), password VARCHAR(255), role VARCHAR(255))")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	fmt.Println("Create table 'users' if not exists success...")
 }
 
-func GetAll() []user.User {
+func GetAllMessages() []entity.Message {
 	results, err := DB.Query("SELECT nom, message FROM bgs")
 	if err != nil {
 		panic(err.Error())
 	}
 
-	var users []user.User
+	var messages []entity.Message
 
 	for results.Next() {
-		var user user.User
+		var message entity.Message
 
-		err = results.Scan(&user.Name, &user.Message)
+		err = results.Scan(&message.Name, &message.Message)
 		if err != nil {
 			panic(err.Error())
 		}
-		users = append(users, user)
+		messages = append(messages, message)
 	}
 
-	return users
+	return messages
 }
 
-func InsertUserMessage(nom string, message string) {
+func InsertMessage(message entity.Message) {
 	insert := "INSERT INTO bgs (nom, message) values (?, ?)"
-	_, err := DB.Exec(insert, nom, message)
+	_, err := DB.Exec(insert, message.Name, message.Message)
 	if err != nil {
 		panic(err.Error())
 	}
+}
+
+func FindUser(user entity.User) {
+
+}
+
+func InsertUser(user entity.User) {
+
 }

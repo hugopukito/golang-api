@@ -11,8 +11,11 @@ import (
 func InitRouter() {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/users", service.GetUsers).Methods("GET")
-	router.HandleFunc("/users", service.PostUserMessage).Methods("POST")
+	router.HandleFunc("/messages", service.GetMessages).Methods("GET")
+	router.HandleFunc("/messages", service.PostMessage).Methods("POST")
+
+	router.HandleFunc("/signup", service.SignUp).Methods("POST")
+	router.HandleFunc("/signin", service.SignIn).Methods("POST")
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
