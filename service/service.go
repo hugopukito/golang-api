@@ -2,7 +2,6 @@ package service
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -14,16 +13,23 @@ import (
 func GetMessages(w http.ResponseWriter, r *http.Request) {
 	cors.EnableCors(&w, r)
 
-	ParseJwt(w, r.Header["Authorization"][0])
-
 	w.Header().Set("Content-Type", "application/json")
 	messages := db.GetAllMessages()
-	dto, _ := json.Marshal(messages)
-	fmt.Fprintf(w, string(dto))
+	dto, err := json.Marshal(messages)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	w.Write([]byte(string(dto)))
 }
 
 func PostMessage(w http.ResponseWriter, r *http.Request) {
 	cors.EnableCors(&w, r)
+
+	claims := parseJwt(w, r.Header["Authorization"][0])
+
+	email := retrieveEmail(claims)
+	user := retrieveUserWithEmail(email)
 
 	var message entity.Message
 	err := json.NewDecoder(r.Body).Decode(&message)
@@ -31,6 +37,8 @@ func PostMessage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	message.Name = user.Name
 
 	db.InsertMessage(message)
 	w.WriteHeader(http.StatusCreated)
@@ -46,12 +54,12 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if db.FindUser(user.Email).Email != "" {
+	if retrieveUserWithEmail(user.Email).Email != "" {
 		w.WriteHeader(http.StatusConflict)
 		return
 	}
 
-	pwd, err := GeneratehashPassword(user.Password)
+	pwd, err := generateHashPassword(user.Password)
 	if err != nil {
 		log.Fatalln("error in password hash")
 	}
@@ -77,14 +85,14 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	check := CheckPasswordHash(authdetails.Password, authUser.Password)
+	check := checkPasswordHash(authdetails.Password, authUser.Password)
 
 	if !check {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	validToken, err := GenerateJWT(authUser.Email, authUser.Role)
+	validToken, err := generateJWT(authUser.Email)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -92,8 +100,11 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 
 	var token entity.Token
 	token.Email = authUser.Email
-	token.Role = authUser.Role
 	token.TokenString = validToken
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(token)
+}
+
+func retrieveUserWithEmail(email string) entity.User {
+	return db.FindUser(email)
 }
