@@ -13,6 +13,9 @@ import (
 
 func GetMessages(w http.ResponseWriter, r *http.Request) {
 	cors.EnableCors(&w, r)
+
+	ParseJwt(w, r.Header["Authorization"][0])
+
 	w.Header().Set("Content-Type", "application/json")
 	messages := db.GetAllMessages()
 	dto, _ := json.Marshal(messages)
@@ -39,7 +42,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	var user entity.User
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -64,7 +67,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	var authdetails entity.Authentication
 	err := json.NewDecoder(r.Body).Decode(&authdetails)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
