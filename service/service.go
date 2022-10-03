@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -21,6 +22,20 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write([]byte(string(dto)))
+}
+
+func Test(w http.ResponseWriter, r *http.Request) {
+	cors.EnableCors(&w, r)
+
+	claims := parseJwt(w, r.Header["Authorization"][0])
+
+	email := retrieveEmail(claims)
+	user := retrieveUserWithEmail(email)
+
+	var message entity.Message
+	json.NewDecoder(r.Body).Decode(&message)
+	fmt.Printf(message.Message)
+	fmt.Printf(user.Email)
 }
 
 func PostMessage(w http.ResponseWriter, r *http.Request) {
