@@ -27,15 +27,21 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 func Test(w http.ResponseWriter, r *http.Request) {
 	cors.EnableCors(&w, r)
 
-	claims := parseJwt(w, r.Header["Authorization"][0])
+	temp := r.Header["Authorization"]
+	var token string
+	for i := 0; i < len(temp); i++ {
+		token = temp[0]
+	}
+	fmt.Println(token)
+	// parseJwt(w, token)
+	/*
+		email := retrieveEmail(claims)
+		user := retrieveUserWithEmail(email)
 
-	email := retrieveEmail(claims)
-	user := retrieveUserWithEmail(email)
-
-	var message entity.Message
-	json.NewDecoder(r.Body).Decode(&message)
-	fmt.Printf(message.Message)
-	fmt.Printf(user.Email)
+		var message entity.Message
+		json.NewDecoder(r.Body).Decode(&message)
+		fmt.Println(message.Message)
+		fmt.Println(user.Email) */
 }
 
 func PostMessage(w http.ResponseWriter, r *http.Request) {
