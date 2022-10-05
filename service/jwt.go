@@ -67,7 +67,7 @@ func parseJwt(w http.ResponseWriter, bearerToken string) jwt.MapClaims {
 
 	token, err := jwt.Parse(bearerToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			log.Fatalln("there was an error in parsing token")
+			w.WriteHeader(http.StatusBadRequest)
 		}
 		return mySigningKey, nil
 	})
@@ -79,7 +79,7 @@ func parseJwt(w http.ResponseWriter, bearerToken string) jwt.MapClaims {
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		return claims
 	}
-	log.Fatalln("claims problems in jwt")
+	w.WriteHeader(http.StatusBadRequest)
 	return nil
 }
 

@@ -27,7 +27,6 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 func Test(w http.ResponseWriter, r *http.Request) {
 	cors.EnableCors(&w, r)
 
-	// temp := r.Header.Get("Authorization")
 	token := r.Header["Authorization"]
 	if len(token) > 0 {
 		claims := parseJwt(w, token[0])
