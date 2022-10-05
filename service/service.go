@@ -43,22 +43,23 @@ func Test(w http.ResponseWriter, r *http.Request) {
 func PostMessage(w http.ResponseWriter, r *http.Request) {
 	cors.EnableCors(&w, r)
 
-	claims := parseJwt(w, r.Header["Authorization"][0])
+	token := r.Header["Authorization"]
+	if len(token) > 0 {
+		claims := parseJwt(w, token[0])
+		email := retrieveEmail(claims)
+		user := retrieveUserWithEmail(email)
+		var message entity.Message
+		err := json.NewDecoder(r.Body).Decode(&message)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
-	email := retrieveEmail(claims)
-	user := retrieveUserWithEmail(email)
+		message.Name = user.Name
 
-	var message entity.Message
-	err := json.NewDecoder(r.Body).Decode(&message)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		db.InsertMessage(message)
+		w.WriteHeader(http.StatusCreated)
 	}
-
-	message.Name = user.Name
-
-	db.InsertMessage(message)
-	w.WriteHeader(http.StatusCreated)
 }
 
 func SignUp(w http.ResponseWriter, r *http.Request) {
