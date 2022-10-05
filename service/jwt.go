@@ -51,7 +51,6 @@ func generateJWT(email string) (string, error) {
 }
 
 func parseJwt(w http.ResponseWriter, bearerToken string) jwt.MapClaims {
-	println(bearerToken)
 	bearerToken = strings.Replace(bearerToken, "Bearer ", "", 1)
 
 	home, err := os.UserHomeDir()
