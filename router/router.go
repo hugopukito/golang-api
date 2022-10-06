@@ -13,7 +13,6 @@ func InitRouter() {
 
 	router.HandleFunc("/messages", service.GetMessages).Methods("GET")
 	router.HandleFunc("/messages", service.PostMessage).Methods("POST", "OPTIONS")
-	router.HandleFunc("/test", service.Test).Methods("POST", "OPTIONS")
 
 	router.HandleFunc("/signup", service.SignUp).Methods("POST")
 	router.HandleFunc("/signin", service.SignIn).Methods("POST")

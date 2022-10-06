@@ -2,7 +2,6 @@ package service
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -10,6 +9,8 @@ import (
 	"module.com/webServer/db"
 	"module.com/webServer/entity"
 )
+
+var user entity.User
 
 func GetMessages(w http.ResponseWriter, r *http.Request) {
 	cors.EnableCors(&w, r)
@@ -24,42 +25,22 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(string(dto)))
 }
 
-func Test(w http.ResponseWriter, r *http.Request) {
-	cors.EnableCors(&w, r)
-
-	token := r.Header["Authorization"]
-	if len(token) > 0 {
-		claims := parseJwt(w, token[0])
-		email := retrieveEmail(claims)
-		user := retrieveUserWithEmail(email)
-
-		var message entity.Message
-		json.NewDecoder(r.Body).Decode(&message)
-		fmt.Println(message.Message)
-		fmt.Println(user.Email)
-	}
-}
-
 func PostMessage(w http.ResponseWriter, r *http.Request) {
 	cors.EnableCors(&w, r)
+	parseAuthorization(w, r)
 
-	token := r.Header["Authorization"]
-	if len(token) > 0 {
-		claims := parseJwt(w, token[0])
-		email := retrieveEmail(claims)
-		user := retrieveUserWithEmail(email)
-		var message entity.Message
-		err := json.NewDecoder(r.Body).Decode(&message)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		message.Name = user.Name
-
-		db.InsertMessage(message)
-		w.WriteHeader(http.StatusCreated)
+	var message entity.Message
+	err := json.NewDecoder(r.Body).Decode(&message)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
+
+	message.Name = user.Name
+
+	// db.InsertMessage(message)
+	// w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusCreated)
 }
 
 func SignUp(w http.ResponseWriter, r *http.Request) {
@@ -125,4 +106,13 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 
 func retrieveUserWithEmail(email string) entity.User {
 	return db.FindUser(email)
+}
+
+func parseAuthorization(w http.ResponseWriter, r *http.Request) {
+	token := r.Header["Authorization"]
+	if len(token) > 0 {
+		claims := parseJwt(w, token[0])
+		user.Email = retrieveEmail(claims)
+		user.Name = retrieveUserWithEmail(user.Email).Name
+	}
 }
