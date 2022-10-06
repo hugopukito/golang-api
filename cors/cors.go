@@ -5,6 +5,7 @@ import (
 )
 
 func EnableCors(w *http.ResponseWriter, r *http.Request) {
+	header := (*w).Header()
 
 	allowList := map[string]bool{
 		"http://www.hugopukito.com": true,
@@ -13,7 +14,13 @@ func EnableCors(w *http.ResponseWriter, r *http.Request) {
 	}
 
 	if origin := r.Header.Get("Origin"); allowList[origin] {
-		(*w).Header().Set("Access-Control-Allow-Origin", origin)
+		header.Add("Access-Control-Allow-Origin", origin)
 	}
-	(*w).Header().Set("Access-Control-Allow-Headers", "Authorization")
+
+	header.Add("Access-Control-Allow-Headers", "Authorization")
+
+	if r.Method == "OPTIONS" {
+		(*w).WriteHeader(http.StatusOK)
+		return
+	}
 }

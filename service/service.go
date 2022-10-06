@@ -37,9 +37,7 @@ func PostMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	message.Name = user.Name
-
-	// db.InsertMessage(message)
-	// w.WriteHeader(http.StatusCreated)
+	db.InsertMessage(message)
 	w.WriteHeader(http.StatusCreated)
 }
 
