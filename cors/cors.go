@@ -20,7 +20,7 @@ func EnableCors(w *http.ResponseWriter, r *http.Request) {
 	header.Add("Access-Control-Allow-Headers", "Authorization")
 
 	if r.Method == "OPTIONS" {
-		(*w).WriteHeader(http.StatusOK)
+		(*w).Header().Add("Access-Control-Max-Age", "3600")
 		return
 	}
 }
