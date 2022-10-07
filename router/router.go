@@ -14,8 +14,8 @@ func InitRouter() {
 	router.HandleFunc("/messages", service.GetMessages).Methods("GET")
 	router.HandleFunc("/messages", service.PostMessage).Methods("POST", "OPTIONS")
 
-	router.HandleFunc("/signup", service.SignUp).Methods("POST")
-	router.HandleFunc("/signin", service.SignIn).Methods("POST")
+	router.HandleFunc("/signup", service.SignUp).Methods("POST", "OPTIONS")
+	router.HandleFunc("/signin", service.SignIn).Methods("POST", "OPTIONS")
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
