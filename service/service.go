@@ -97,6 +97,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 
 	var token entity.Token
 	token.Email = authUser.Email
+	token.Name = authUser.Name
 	token.TokenString = validToken
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(token)

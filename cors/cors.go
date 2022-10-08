@@ -21,6 +21,7 @@ func EnableCors(w *http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "OPTIONS" {
 		(*w).Header().Add("Access-Control-Max-Age", "3600")
+		(*w).WriteHeader(http.StatusOK)
 		return
 	}
 }
