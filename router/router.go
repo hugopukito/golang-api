@@ -17,5 +17,7 @@ func InitRouter() {
 	router.HandleFunc("/signup", service.SignUp).Methods("POST", "OPTIONS")
 	router.HandleFunc("/signin", service.SignIn).Methods("POST", "OPTIONS")
 
+	router.HandleFunc("/socket", service.WsEndpoint)
+
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
