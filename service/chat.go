@@ -36,7 +36,11 @@ func WsEndpoint(w http.ResponseWriter, r *http.Request) {
 			fmt.Printf("error reading JSON: %s\n", err.Error())
 			break
 		}
-		SendMessage("temp")
+
+		err = wsConn.WriteMessage(websocket.TextMessage, []byte(msg.Message))
+		if err != nil {
+			fmt.Printf("error sending message: %s\n", err.Error())
+		}
 	}
 }
 
