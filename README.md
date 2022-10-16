@@ -18,5 +18,9 @@ mysql -u root -p
 
 CREATE DATABASE golang;
 
+## Install redis key_value database to store chat messages
+
+sudo apt install redis
+
 ## Run api
 go run main.go
