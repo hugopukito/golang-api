@@ -18,6 +18,12 @@ mysql -u root -p
 
 CREATE DATABASE golang;
 
+## Create dir with secret for jwt tokens
+
+cd && mkdir secrets && cd secrets && touch secret_jwt.txt
+
+### Then add your long password/secret in it
+
 ## Install redis key_value database to store chat messages
 
 sudo apt install redis
