@@ -37,6 +37,9 @@ func HandleChatConnections(w http.ResponseWriter, r *http.Request) {
 	// if it's zero, no messages were ever sent/saved
 	if rdb.Exists("chat_messages").Val() != 0 {
 		sendPreviousMessages(ws)
+	} else {
+		msg := entity.Message{Name: "", Message: "Be the first to send a message !"}
+		messageClient(ws, msg)
 	}
 
 	for {
