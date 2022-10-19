@@ -25,7 +25,7 @@ var upgrader = websocket.Upgrader{
 }
 
 func HandleChatConnections(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("new user in chat")
+	// fmt.Println("new user in chat")
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -38,8 +38,7 @@ func HandleChatConnections(w http.ResponseWriter, r *http.Request) {
 	if rdb.Exists("chat_messages").Val() != 0 {
 		sendPreviousMessages(ws)
 	} else {
-		msg := entity.Message{Name: "", Message: "Be the first to send a message !"}
-		messageClient(ws, msg)
+		ws.WriteJSON(nil)
 	}
 
 	for {
@@ -53,7 +52,7 @@ func HandleChatConnections(w http.ResponseWriter, r *http.Request) {
 		// send new message to the channel
 		broadcaster <- msg
 	}
-	fmt.Println("user left chat")
+	// fmt.Println("user left chat")
 }
 
 func sendPreviousMessages(ws *websocket.Conn) {
