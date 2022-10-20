@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"net/http"
+	"strconv"
 
 	"github.com/go-redis/redis"
 	"github.com/gorilla/websocket"
@@ -17,6 +19,7 @@ var (
 )
 
 var clients = make(map[*websocket.Conn]bool)
+var clientsColor = make(map[*websocket.Conn]string)
 var broadcaster = make(chan entity.Message)
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
@@ -33,6 +36,7 @@ func HandleChatConnections(w http.ResponseWriter, r *http.Request) {
 	// ensure connection close when function returns
 	defer ws.Close()
 	clients[ws] = true
+	clientsColor[ws] = strconv.Itoa(rand.Intn(255)) + "/" + strconv.Itoa(rand.Intn(255)) + "/" + strconv.Itoa(rand.Intn(255))
 
 	// if it's zero, no messages were ever sent/saved
 	if rdb.Exists("chat_messages").Val() != 0 {
@@ -50,6 +54,7 @@ func HandleChatConnections(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		// send new message to the channel
+		msg.Color = clientsColor[ws]
 		broadcaster <- msg
 	}
 	// fmt.Println("user left chat")
