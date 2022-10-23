@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -39,6 +40,20 @@ func PostMessage(w http.ResponseWriter, r *http.Request) {
 	message.Name = user.Name
 	db.InsertMessage(message)
 	w.WriteHeader(http.StatusCreated)
+}
+
+func GetImage(w http.ResponseWriter, r *http.Request) {
+	cors.EnableCors(&w, r)
+	buf, err := ioutil.ReadFile("item.png")
+
+	if err != nil {
+
+		log.Fatal(err)
+	}
+
+	w.Header().Set("Content-Type", "image/png")
+	w.Write(buf)
+
 }
 
 func SignUp(w http.ResponseWriter, r *http.Request) {
