@@ -14,6 +14,8 @@ func InitRouter() {
 	router.HandleFunc("/messages", service.GetMessages).Methods("GET")
 	router.HandleFunc("/messages", service.PostMessage).Methods("POST", "OPTIONS")
 
+	router.HandleFunc("/image/{id}", service.GetImage).Methods("GET")
+
 	router.HandleFunc("/signup", service.SignUp).Methods("POST", "OPTIONS")
 	router.HandleFunc("/signin", service.SignIn).Methods("POST", "OPTIONS")
 

@@ -22,11 +22,19 @@ CREATE DATABASE golang;
 
 cd && mkdir secrets && cd secrets && touch secret_jwt.txt
 
-### Then add your long password/secret in it
+Then add your long password/secret in it
 
 ## Install redis key_value database to store chat messages
 
 sudo apt install redis
+
+## Create dir of imgs
+
+mkdir back-imgs
+
+put img name in this dir as img id you pass in path variables in request
+
+jpg only
 
 ## Run api
 go run main.go

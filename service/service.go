@@ -5,7 +5,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/gorilla/mux"
 	"module.com/webServer/cors"
 	"module.com/webServer/db"
 	"module.com/webServer/entity"
@@ -44,16 +46,27 @@ func PostMessage(w http.ResponseWriter, r *http.Request) {
 
 func GetImage(w http.ResponseWriter, r *http.Request) {
 	cors.EnableCors(&w, r)
-	buf, err := ioutil.ReadFile("item.png")
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+
+	vars := mux.Vars(r)
+	id, ok := vars["id"]
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	content, err := ioutil.ReadFile(home + "/back-imgs/" + id + ".jpg")
 
 	if err != nil {
-
-		log.Fatal(err)
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
 	w.Header().Set("Content-Type", "image/png")
-	w.Write(buf)
-
+	w.Write(content)
 }
 
 func SignUp(w http.ResponseWriter, r *http.Request) {

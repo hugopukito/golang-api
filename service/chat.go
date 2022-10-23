@@ -123,7 +123,7 @@ func init() {
 	}
 	rdb = redis.NewClient(opt)
 
-	fmt.Println("Connection redis success...")
+	fmt.Println("Connection redis (may haved) success...")
 
 	go handleMessages()
 }
