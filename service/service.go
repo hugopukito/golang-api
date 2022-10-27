@@ -58,7 +58,7 @@ func GetImage(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	content, err := ioutil.ReadFile(home + "/back-imgs/" + id + ".jpg")
+	content, err := ioutil.ReadFile(home + "/imgs-back/" + id + ".jpg")
 
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)

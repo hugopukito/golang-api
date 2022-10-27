@@ -30,7 +30,7 @@ sudo apt install redis
 
 ## Create dir of imgs
 
-mkdir back-imgs
+mkdir imgs-back
 
 put img name in this dir as img id you pass in path variables in request
 
