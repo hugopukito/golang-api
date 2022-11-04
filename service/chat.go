@@ -43,8 +43,6 @@ func HandleChatConnections(w http.ResponseWriter, r *http.Request) {
 		ws.WriteJSON(nil)
 	}
 
-	fmt.Println(clients)
-
 	for {
 		var msg entity.Message
 		// Read in a new message as JSON and map it to a Message object
