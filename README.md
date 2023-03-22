@@ -38,3 +38,22 @@ jpg only
 
 ## Run api
 go run main.go
+
+## Systemd
+
+[Unit]
+Description=Go back-end
+
+[Service]
+User=pukito
+WorkingDirectory=/home/pukito/back-go
+ExecStart=/snap/bin/go run main.go
+Restart=always
+Environment=GOMODCACHE=/home/pukito/go/pkg/mod
+Environment=GOPATH=/home/pukito/go
+Environment=GOCACHE=/home/pukito/go/pkg/cache
+StandardOutput=file:/var/log/go-back-service.log
+StandardError=file:/var/log/go-back-service.log
+
+[Install]
+WantedBy=multi-user.target
