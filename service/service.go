@@ -2,72 +2,15 @@ package service
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 
-	"github.com/gorilla/mux"
 	"module.com/webServer/cors"
 	"module.com/webServer/db"
 	"module.com/webServer/entity"
 )
 
 var user entity.User
-
-func GetMessages(w http.ResponseWriter, r *http.Request) {
-	cors.EnableCors(&w, r)
-
-	w.Header().Set("Content-Type", "application/json")
-	messages := db.GetAllMessages()
-	dto, err := json.Marshal(messages)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	w.Write([]byte(string(dto)))
-}
-
-func PostMessage(w http.ResponseWriter, r *http.Request) {
-	cors.EnableCors(&w, r)
-	parseAuthorization(w, r)
-
-	var message entity.Message
-	err := json.NewDecoder(r.Body).Decode(&message)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	message.Name = user.Name
-	db.InsertMessage(message)
-	w.WriteHeader(http.StatusCreated)
-}
-
-func GetImage(w http.ResponseWriter, r *http.Request) {
-	cors.EnableCors(&w, r)
-
-	home, err := os.UserHomeDir()
-	if err != nil {
-		panic(err)
-	}
-
-	vars := mux.Vars(r)
-	id, ok := vars["id"]
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-	}
-
-	content, err := ioutil.ReadFile(home + "/imgs-back/" + id + ".jpg")
-
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "image/png")
-	w.Write(content)
-}
 
 func SignUp(w http.ResponseWriter, r *http.Request) {
 	cors.EnableCors(&w, r)

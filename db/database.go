@@ -35,35 +35,6 @@ func init() {
 	fmt.Println("Create table 'users' if not exists success...")
 }
 
-func GetAllMessages() []entity.Message {
-	results, err := DB.Query("SELECT name, message FROM messages")
-	if err != nil {
-		panic(err.Error())
-	}
-
-	var messages []entity.Message
-
-	for results.Next() {
-		var message entity.Message
-
-		err = results.Scan(&message.Name, &message.Message)
-		if err != nil {
-			panic(err.Error())
-		}
-		messages = append(messages, message)
-	}
-
-	return messages
-}
-
-func InsertMessage(message entity.Message) {
-	insert := "INSERT INTO messages (name, message) values (?, ?)"
-	_, err := DB.Exec(insert, message.Name, message.Message)
-	if err != nil {
-		panic(err.Error())
-	}
-}
-
 func FindUser(email string) entity.User {
 	result, err := DB.Query("select name, email, password from users where email = ? order by email asc limit 1;", email)
 	if err != nil {
