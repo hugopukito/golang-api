@@ -29,7 +29,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 
 	pwd, err := generateHashPassword(user.Password)
 	if err != nil {
-		log.Fatalln("error in password hash")
+		log.Println("error in password hash")
 	}
 
 	user.Password = pwd

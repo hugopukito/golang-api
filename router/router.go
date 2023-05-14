@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"module.com/webServer/game"
 	"module.com/webServer/service"
 )
 
@@ -15,6 +16,8 @@ func InitRouter() {
 	router.HandleFunc("/signin", service.SignIn).Methods("POST", "OPTIONS")
 
 	router.HandleFunc("/chat", service.HandleChatConnections)
+
+	router.HandleFunc("/game", game.HandleGameConnections)
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

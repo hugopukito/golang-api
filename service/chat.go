@@ -26,10 +26,9 @@ var upgrader = websocket.Upgrader{
 }
 
 func HandleChatConnections(w http.ResponseWriter, r *http.Request) {
-	// fmt.Println("new user in chat")
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	// ensure connection close when function returns
 	defer ws.Close()
@@ -54,7 +53,6 @@ func HandleChatConnections(w http.ResponseWriter, r *http.Request) {
 		msg.Color = clients[ws]
 		broadcaster <- msg
 	}
-	// fmt.Println("user left chat")
 }
 
 func sendPreviousMessages(ws *websocket.Conn) {
