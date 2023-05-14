@@ -2,7 +2,6 @@ package service
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"math/rand"
@@ -120,8 +119,10 @@ func init() {
 		panic(err)
 	}
 	rdb = redis.NewClient(opt)
-
-	fmt.Println("Connection redis (may haved) success...")
+	if err := rdb.Ping(); err.String() != "ping: PONG" {
+		log.Println("error redis connection init: " + err.String())
+		panic(err)
+	}
 
 	go handleMessages()
 }

@@ -12,7 +12,7 @@ import (
 var DB *sql.DB
 var err error
 
-func init() {
+func initDB() {
 	DB, err = sql.Open("mysql", "root:password@tcp(127.0.0.1:3306)/golang")
 	if err != nil {
 		panic(err.Error())
