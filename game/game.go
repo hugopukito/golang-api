@@ -80,8 +80,8 @@ func HandleGameConnections(w http.ResponseWriter, r *http.Request) {
 	defer broadcastDelete(player)
 
 	storePlayer(player)
-	sendPlayerID(player, ws)
 	sendPlayers(ws)
+	sendPlayerID(player, ws)
 	broadcastPosition(player)
 
 	for {
