@@ -20,18 +20,20 @@ const (
 
 var (
 	rdb         *redis.Client
-	clients     = make(map[*websocket.Conn]bool)
+	clients     = make(map[*websocket.Conn]string)
 	broadcaster = make(chan Player)
 	upgrader    = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
 		},
 	}
+	emojis = []string{"🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐻‍❄️", "🐨", "🐯", "🦁", "🐮", "🐷", "🐽", "🐸", "🐒", "🐔", "🐧", "🐦", "🐦‍⬛", "🐤", "🐣", "🐥", "🦆", "🦅", "🦉", "🦇", "🐺", "🐗", "🐴", "🦄", "🐝", "🪱", "🐛", "🦋", "🐌", "🐞", "🐜", "🪰", "🪲", "🪳", "🦟", "🦗", "🕷", "🦂", "🐢", "🐍", "🦎", "🦖", "🦕", "🐙", "🦑", "🦐", "🦞", "🦀", "🪼", "🪸", "🐡", "🐠", "🐟", "🐬", "🐳", "🐋", "🦈", "🐊", "🐅", "🐆", "🦓", "🫏", "🦍", "🦧", "🦣", "🐘", "🦛", "🦏", "🐪", "🐫", "🦒", "🦘", "🦬", "🐃", "🐂", "🐄", "🐎", "🐖", "🐏", "🐑", "🦙", "🐐", "🦌", "🫎", "🐕", "🐩", "🦮", "🐕‍🦺", "🐈", "🐈‍⬛", "🐓", "🦃", "🦤", "🦚", "🦜", "🦢", "🪿", "🦩", "🕊", "🐇", "🦝", "🦨", "🦡", "🦫", "🦦", "🦥", "🐁", "🐀", "🐿", "🦔", "🐉", "🐲"}
 )
 
 type Player struct {
-	ID       string   `json:"id"`
+	ID       string   `json:"id,omitempty"`
 	Position Position `json:"position"`
+	Emoji    string   `json:"emoji"`
 }
 
 type Position struct {
@@ -50,6 +52,8 @@ func init() {
 		panic(err)
 	}
 
+	deleteAllPlayers()
+
 	go handleActions()
 }
 
@@ -59,7 +63,9 @@ func HandleGameConnections(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	defer ws.Close()
-	clients[ws] = true
+
+	randomEmoji := getRandomEmoji()
+	clients[ws] = randomEmoji
 
 	player := Player{
 		ID: uuid.New().String(),
@@ -67,13 +73,14 @@ func HandleGameConnections(w http.ResponseWriter, r *http.Request) {
 			X: rand.Intn(width),
 			Y: rand.Intn(height),
 		},
+		Emoji: randomEmoji,
 	}
 
 	defer deletePlayer(player)
 	defer broadcastDelete(player)
 
 	storePlayer(player)
-	sendPlayerId(player, ws)
+	sendPlayerID(player, ws)
 	sendPlayers(ws)
 	broadcastPosition(player)
 
@@ -81,7 +88,7 @@ func HandleGameConnections(w http.ResponseWriter, r *http.Request) {
 		var player Player
 		err := ws.ReadJSON(&player)
 		if err != nil {
-			delete(clients, ws)
+			deleteCloseClient(ws)
 			break
 		}
 		broadcaster <- player
@@ -97,7 +104,7 @@ func handleActions() {
 	}
 }
 
-func sendPlayerId(player Player, ws *websocket.Conn) {
+func sendPlayerID(player Player, ws *websocket.Conn) {
 	currentPlayer := struct {
 		Current bool   `json:"current"`
 		ID      string `json:"id"`
@@ -106,8 +113,7 @@ func sendPlayerId(player Player, ws *websocket.Conn) {
 	err := ws.WriteJSON(currentPlayer)
 	if err != nil && unsafeError(err) {
 		log.Printf("error: %v", err)
-		ws.Close()
-		delete(clients, ws)
+		deleteCloseClient(ws)
 	}
 }
 
@@ -115,8 +121,7 @@ func sendPlayers(ws *websocket.Conn) {
 	keys, err := rdb.Keys("game_player_*").Result()
 	if err != nil {
 		log.Printf("error: %v", err)
-		ws.Close()
-		delete(clients, ws)
+		deleteCloseClient(ws)
 		return
 	}
 	if len(keys) > 0 {
@@ -133,8 +138,8 @@ func sendPlayers(ws *websocket.Conn) {
 				if index != -1 {
 					id := key[index+len(targetString):]
 
-					var position Position
-					err := json.Unmarshal([]byte(value), &position)
+					var player Player
+					err := json.Unmarshal([]byte(value), &player)
 					if err != nil {
 						log.Println("Error:", err)
 						return
@@ -142,7 +147,8 @@ func sendPlayers(ws *websocket.Conn) {
 
 					players = append(players, Player{
 						ID:       id,
-						Position: position,
+						Position: player.Position,
+						Emoji:    player.Emoji,
 					})
 				} else {
 					log.Println("Target string not found.")
@@ -152,8 +158,7 @@ func sendPlayers(ws *websocket.Conn) {
 		err = ws.WriteJSON(players)
 		if err != nil && unsafeError(err) {
 			log.Printf("error: %v", err)
-			ws.Close()
-			delete(clients, ws)
+			deleteCloseClient(ws)
 		}
 	}
 }
@@ -163,8 +168,7 @@ func broadcastPosition(player Player) {
 		err := client.WriteJSON(player)
 		if err != nil && unsafeError(err) {
 			log.Printf("error: %v", err)
-			client.Close()
-			delete(clients, client)
+			deleteCloseClient(client)
 		}
 	}
 }
@@ -180,14 +184,13 @@ func broadcastDelete(player Player) {
 		err := client.WriteJSON(deletePlayer)
 		if err != nil && unsafeError(err) {
 			log.Printf("error: %v", err)
-			client.Close()
-			delete(clients, client)
+			deleteCloseClient(client)
 		}
 	}
 }
 
 func storePlayer(player Player) {
-	json, err := json.Marshal(player.Position)
+	encoded, err := json.Marshal(Player{Position: player.Position, Emoji: player.Emoji})
 	if err != nil {
 		log.Println("error json encoding in store")
 	}
@@ -201,12 +204,12 @@ func storePlayer(player Player) {
 	}
 
 	if exists == 1 {
-		err = rdb.Set(key, json, 0).Err()
+		err = rdb.Set(key, encoded, 0).Err()
 		if err != nil {
 			log.Println("error rdb.Set(key, json, 0).Err()")
 		}
 	} else {
-		err = rdb.Set(key, json, 0).Err()
+		err = rdb.Set(key, encoded, 0).Err()
 		if err != nil {
 			log.Println("error rdb.Set(key, json, 0).Err()")
 		}
@@ -220,6 +223,44 @@ func deletePlayer(player Player) {
 	if err != nil {
 		log.Println("error rdb.Del(key).Err()")
 	}
+}
+
+func deleteAllPlayers() {
+	keys, err := rdb.Keys("game_player_*").Result()
+	if err != nil {
+		log.Println("error rdb.Keys('game_player_*').Result()")
+	}
+	for _, key := range keys {
+		err = rdb.Del(key).Err()
+		if err != nil {
+			log.Println("error rdb.Del(key).Err()")
+		}
+	}
+}
+
+func getRandomEmoji() string {
+	// Check if the slice is empty
+	if len(emojis) == 0 {
+		return "💩"
+	}
+
+	// Generate a random index
+	randomIndex := rand.Intn(len(emojis))
+
+	// Get the random emoji
+	randomEmoji := emojis[randomIndex]
+
+	// Remove the emoji from the slice
+	emojis[randomIndex] = emojis[len(emojis)-1]
+	emojis = emojis[:len(emojis)-1]
+
+	return randomEmoji
+}
+
+func deleteCloseClient(client *websocket.Conn) {
+	client.Close()
+	emojis = append(emojis, clients[client])
+	delete(clients, client)
 }
 
 func unsafeError(err error) bool {
