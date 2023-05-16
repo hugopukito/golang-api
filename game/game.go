@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/go-redis/redis"
 	"github.com/google/uuid"
@@ -14,8 +15,8 @@ import (
 )
 
 const (
-	height = 600
-	width  = 1200
+	Height = 600
+	Width  = 1200
 )
 
 var (
@@ -27,13 +28,13 @@ var (
 			return true
 		},
 	}
-	emojis = []string{"🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐻‍❄️", "🐨", "🐯", "🦁", "🐮", "🐷", "🐽", "🐸", "🐒", "🐔", "🐧", "🐦", "🐦‍⬛", "🐤", "🐣", "🐥", "🦆", "🦅", "🦉", "🦇", "🐺", "🐗", "🐴", "🦄", "🐝", "🪱", "🐛", "🦋", "🐌", "🐞", "🐜", "🪰", "🪲", "🪳", "🦟", "🦗", "🕷", "🦂", "🐢", "🐍", "🦎", "🦖", "🦕", "🐙", "🦑", "🦐", "🦞", "🦀", "🪼", "🪸", "🐡", "🐠", "🐟", "🐬", "🐳", "🐋", "🦈", "🐊", "🐅", "🐆", "🦓", "🫏", "🦍", "🦧", "🦣", "🐘", "🦛", "🦏", "🐪", "🐫", "🦒", "🦘", "🦬", "🐃", "🐂", "🐄", "🐎", "🐖", "🐏", "🐑", "🦙", "🐐", "🦌", "🫎", "🐕", "🐩", "🦮", "🐕‍🦺", "🐈", "🐈‍⬛", "🐓", "🦃", "🦤", "🦚", "🦜", "🦢", "🪿", "🦩", "🕊", "🐇", "🦝", "🦨", "🦡", "🦫", "🦦", "🦥", "🐁", "🐀", "🐿", "🦔", "🐉", "🐲"}
+	emojis = []string{"🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐻‍❄️", "🐨", "🐯", "🦁", "🐮", "🐷", "🐽", "🐸", "🐒", "🐔", "🐧", "🐦", "🐤", "🐣", "🐥", "🦆", "🦅", "🦉", "🦇", "🐺", "🐗", "🐴", "🦄", "🐝", "🪱", "🐛", "🦋", "🐌", "🐞", "🐜", "🪰", "🪲", "🪳", "🦟", "🦗", "🕷", "🦂", "🐢", "🐍", "🦎", "🦖", "🦕", "🐙", "🦑", "🦐", "🦞", "🦀", "🪼", "🪸", "🐡", "🐠", "🐟", "🐬", "🐳", "🐋", "🦈", "🐊", "🐅", "🐆", "🦓", "🫏", "🦍", "🦧", "🦣", "🐘", "🦛", "🦏", "🐪", "🐫", "🦒", "🦘", "🦬", "🐃", "🐂", "🐄", "🐎", "🐖", "🐏", "🐑", "🦙", "🐐", "🦌", "🫎", "🐕", "🐩", "🦮", "🐕‍🦺", "🐈", "🐈‍⬛", "🐓", "🦃", "🦤", "🦚", "🦜", "🦢", "🪿", "🦩", "🕊", "🐇", "🦝", "🦨", "🦡", "🦫", "🦦", "🦥", "🐁", "🐀", "🐿", "🦔", "🐉", "🐲"}
 )
 
 type Player struct {
 	ID       string   `json:"id,omitempty"`
-	Position Position `json:"position"`
-	Emoji    string   `json:"emoji"`
+	Position Position `json:"position,omitempty"`
+	Emoji    string   `json:"emoji,omitempty"`
 }
 
 type Position struct {
@@ -55,6 +56,13 @@ func init() {
 	deleteAllPlayers()
 
 	go handleActions()
+
+	// for i := 0; i < 5; i++ {
+	// 	go func() {
+	// 		time.Sleep(3 * time.Second)
+	// 		bot()
+	// 	}()
+	// }
 }
 
 func HandleGameConnections(w http.ResponseWriter, r *http.Request) {
@@ -67,11 +75,13 @@ func HandleGameConnections(w http.ResponseWriter, r *http.Request) {
 	randomEmoji := getRandomEmoji()
 	clients[ws] = randomEmoji
 
+	rand.Seed(time.Now().UnixNano())
+
 	player := Player{
 		ID: uuid.New().String(),
 		Position: Position{
-			X: rand.Intn(width),
-			Y: rand.Intn(height),
+			X: rand.Intn(Width),
+			Y: rand.Intn(Height),
 		},
 		Emoji: randomEmoji,
 	}
@@ -81,7 +91,7 @@ func HandleGameConnections(w http.ResponseWriter, r *http.Request) {
 
 	storePlayer(player)
 	sendPlayers(ws)
-	sendPlayerID(player, ws)
+	sendPlayerInfos(player, ws)
 	broadcastPosition(player)
 
 	for {
@@ -104,11 +114,11 @@ func handleActions() {
 	}
 }
 
-func sendPlayerID(player Player, ws *websocket.Conn) {
+func sendPlayerInfos(player Player, ws *websocket.Conn) {
 	currentPlayer := struct {
 		Current bool   `json:"current"`
-		ID      string `json:"id"`
-	}{Current: true, ID: player.ID}
+		Player  Player `json:"player"`
+	}{Current: true, Player: player}
 
 	err := ws.WriteJSON(currentPlayer)
 	if err != nil && unsafeError(err) {
@@ -239,6 +249,8 @@ func deleteAllPlayers() {
 }
 
 func getRandomEmoji() string {
+	rand.Seed(time.Now().UnixNano())
+
 	// Check if the slice is empty
 	if len(emojis) == 0 {
 		return "💩"
