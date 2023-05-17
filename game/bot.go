@@ -15,10 +15,19 @@ type CurrentPlayer struct {
 	Player  Player `json:"player"`
 }
 
+func init() {
+	// for i := 0; i < 5; i++ {
+	// 	go func() {
+	// 		time.Sleep(3 * time.Second)
+	// 		go bot()
+	// 	}()
+	// }
+}
+
 func bot() {
 	ws, _, err := websocket.DefaultDialer.Dial("ws://localhost:8080/game", nil)
 	if err != nil {
-		log.Println("Failed to establish WebSocket connection:", err)
+		log.Println("error bot: Failed to establish WebSocket connection:", err)
 		return
 	}
 
@@ -32,7 +41,7 @@ func bot() {
 		for {
 			_, msg, err := ws.ReadMessage()
 			if err != nil {
-				log.Println("Failed to read message from WebSocket:", err)
+				log.Println("error bot: Failed to read message from WebSocket:", err)
 				return
 			}
 
@@ -40,7 +49,7 @@ func bot() {
 				i++
 				err = json.Unmarshal(msg, &players)
 				if err != nil {
-					log.Println("error bot first message received")
+					log.Println("error bot: first message received")
 					return
 				}
 				received <- true
@@ -51,7 +60,7 @@ func bot() {
 				var currentPlayer CurrentPlayer
 				err = json.Unmarshal(msg, &currentPlayer)
 				if err != nil {
-					log.Println("error bot second message received")
+					log.Println("error bot: second message received")
 					return
 				}
 				player = currentPlayer.Player
@@ -102,7 +111,11 @@ func bot() {
 			myPlayer.Position.X = (myPlayer.Position.X - 1 + Width) % Width
 			myPlayer.Position.Y = (myPlayer.Position.Y - 1 + Height) % Height
 		}
-		ws.WriteJSON(myPlayer)
+		err = ws.WriteJSON(myPlayer)
+		if err != nil {
+			log.Println("error bot: writing to server")
+			break
+		}
 	}
 }
 
