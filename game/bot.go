@@ -10,7 +10,7 @@ import (
 func init() {
 	go func() {
 		time.Sleep(3 * time.Second)
-		for i := 0; i < 2; i++ {
+		for i := 0; i < 5; i++ {
 			go bot()
 		}
 	}()
