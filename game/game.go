@@ -40,8 +40,8 @@ type Player struct {
 }
 
 type Position struct {
-	X int `json:"x"`
-	Y int `json:"y"`
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
 }
 
 func init() {
@@ -75,7 +75,7 @@ func HandleGameConnections(w http.ResponseWriter, r *http.Request) {
 	player := Player{
 		ID: uuid.New().String(),
 		Position: Position{
-			X: rand.Intn(Width),
+			X: float64(rand.Intn(Width)),
 			Y: Height / 2,
 		},
 		Emoji: randomEmoji,

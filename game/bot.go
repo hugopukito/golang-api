@@ -1,6 +1,7 @@
 package game
 
 import (
+	"math"
 	"math/rand"
 	"time"
 
@@ -22,8 +23,8 @@ func bot() {
 	player := Player{
 		ID: uuid.New().String(),
 		Position: Position{
-			X: rand.Intn(Width),
-			Y: rand.Intn(Height),
+			X: float64(rand.Intn(Width)),
+			Y: float64(rand.Intn(Height)),
 		},
 		Emoji: "🥞",
 	}
@@ -41,25 +42,25 @@ func bot() {
 		time.Sleep(10 * time.Millisecond)
 		switch direction {
 		case 0:
-			player.Position.X = (player.Position.X + 1) % Width
+			player.Position.X = math.Mod((player.Position.X + 1), Width)
 		case 1:
-			player.Position.X = (player.Position.X - 1 + Width) % Width
+			player.Position.X = math.Mod((player.Position.X - 1 + Width), Width)
 		case 2:
-			player.Position.Y = (player.Position.Y + 1) % Height
+			player.Position.Y = math.Mod((player.Position.Y + 1), Height)
 		case 3:
-			player.Position.Y = (player.Position.Y - 1 + Height) % Height
+			player.Position.Y = math.Mod((player.Position.Y - 1 + Height), Height)
 		case 4:
-			player.Position.X = (player.Position.X + 1) % Width
-			player.Position.Y = (player.Position.Y + 1) % Height
+			player.Position.X = math.Mod((player.Position.X + 1), Width)
+			player.Position.Y = math.Mod((player.Position.Y + 1), Height)
 		case 5:
-			player.Position.X = (player.Position.X - 1 + Width) % Width
-			player.Position.Y = (player.Position.Y + 1) % Height
+			player.Position.X = math.Mod((player.Position.X - 1 + Width), Width)
+			player.Position.Y = math.Mod((player.Position.Y + 1), Height)
 		case 6:
-			player.Position.X = (player.Position.X + 1) % Width
-			player.Position.Y = (player.Position.Y - 1 + Height) % Height
+			player.Position.X = math.Mod((player.Position.X + 1), Width)
+			player.Position.Y = math.Mod((player.Position.Y - 1 + Height), Height)
 		case 7:
-			player.Position.X = (player.Position.X - 1 + Width) % Width
-			player.Position.Y = (player.Position.Y - 1 + Height) % Height
+			player.Position.X = math.Mod((player.Position.X - 1 + Width), Width)
+			player.Position.Y = math.Mod((player.Position.Y - 1 + Height), Height)
 		}
 		broadcastPosition(player)
 	}
