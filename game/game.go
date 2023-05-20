@@ -76,7 +76,7 @@ func HandleGameConnections(w http.ResponseWriter, r *http.Request) {
 		ID: uuid.New().String(),
 		Position: Position{
 			X: rand.Intn(Width),
-			Y: rand.Intn(Height),
+			Y: Height / 2,
 		},
 		Emoji: randomEmoji,
 	}
@@ -94,6 +94,7 @@ func HandleGameConnections(w http.ResponseWriter, r *http.Request) {
 		err := ws.ReadJSON(&player)
 		if err != nil {
 			deleteCloseClient(ws)
+			log.Println("error player msg: ", err)
 			break
 		}
 		broadcaster <- player
